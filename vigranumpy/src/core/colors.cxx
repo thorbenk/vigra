@@ -369,7 +369,7 @@ void pythonGray2QImage_ARGB32Premultiplied(
         
         while(data < dataEnd) 
         {
-            pixelF = *data;
+            pixelF = detail::RequiresExplicitCast<TmpType>::cast(*data);
             
             if(pixelF < normalizeLow) 
             {
@@ -419,6 +419,8 @@ void pythonAlphaModulated2QImage_ARGB32Premultiplied(
     
     vigra_precondition(normalize.shape(0) == 2,
         "alphamodulated2qimage_ARGB32Premultiplied(): normalize.shape[0] == 2 required.");
+    vigra_precondition(tintColor.shape(0) == 3,
+        "alphamodulated2qimage_ARGB32Premultiplied(): tintColor.shape[0] == 3 required.");
             
     const TmpType l = normalize[0];
     const TmpType h = normalize[1];
@@ -426,9 +428,9 @@ void pythonAlphaModulated2QImage_ARGB32Premultiplied(
     vigra_precondition(h > l,
         "alphamodulated2qimage_ARGB32Premultiplied(): normalize[0] < normalize[1] is required.");
     
-    const float r = tintColor[0];
-    const float g = tintColor[1];
-    const float b = tintColor[2];
+    const TmpType r = tintColor[0];
+    const TmpType g = tintColor[1];
+    const TmpType b = tintColor[2];
     
     T* data = image.data();
     const T* dataEnd = image.data()+image.size();

@@ -40,26 +40,66 @@
 from nose.tools import assert_equal, raises, assert_raises, assert_true
 import vigra
 import numpy
-import vigra
-from PyQt4.QtGui import QImage
+
+_have_qt = False
+try:
+    from PyQt4.QtGui import QImage
+    from qimage2ndarray import byte_view
+    _have_qt = True
+except:
+    pass
 
 def test_gray2qimage():
+    if not _have_qt:
+        return
+    
     a = numpy.random.random((100,200)).astype(dtype=numpy.float32)-0.5
-    a[1] =-0.5
-    a[0] = 0.5
+    a[0,0] =-0.5 #make sure we get the correct bounds
+    a[0,1] = 0.5
+    vigra.impex.writeImage(a.swapaxes(0,1), "tmp1.png")
 
-    vigra.impex.writeImage(a.swapaxes(0,1), "tmp1.tiff")
-
-    from qimage2ndarray import byte_view
     img = QImage(a.shape[1], a.shape[0], QImage.Format_ARGB32_Premultiplied)
     n = numpy.asarray([-0.5, 0.5], dtype=numpy.float32)
     vigra.colors.gray2qimage_ARGB32Premultiplied(a, byte_view(img), n)
-    img.save("tmp2.tiff")
+    img.save("tmp2.png")
+    
+    tmp1 = vigra.impex.readImage("tmp1.png")
+    tmp2 = vigra.impex.readImage("tmp2.png")
+    
+    for i in range(3):
+        assert_true( (tmp1 == tmp2[:,:,i]).all() )
+    assert_true( (tmp2[:,:,3] == 255).all() )
 
-    tmp1 = vigra.impex.readImage("tmp2.tiff")
-    tmp2 = vigra.impex.readImage("tmp2.tiff")
-   
-    assert_true( (tmp1 == tmp2).all() )
+def test_alphamodulated2qimage():
+    if not _have_qt:
+        return
+    
+    a = numpy.random.random((100,200)).astype(dtype=numpy.float32)-0.5
+    a[0,0] =-0.5
+    a[0,1] = 0.5
+    vigra.impex.writeImage(a.swapaxes(0,1), "tmp1.png")
+    
+    tintColor = numpy.asarray([0.0, 1.0, 0.0], dtype=numpy.float32)
+    
+    img = QImage(a.shape[1], a.shape[0], QImage.Format_ARGB32_Premultiplied)
+    n = numpy.asarray([-0.5, 0.5], dtype=numpy.float32)
+    
+    vigra.colors.alphamodulated2qimage_ARGB32Premultiplied(a, byte_view(img), tintColor, n)
+    img.save("tmp2.png")
+    
+    tmp1 = vigra.impex.readImage("tmp1.png").view(numpy.ndarray).squeeze()
+    tmp2 = vigra.impex.readImage("tmp2.png").view(numpy.ndarray)
+    
+    assert_true( tmp1.shape[0:2] == tmp2.shape[0:2] )
+    assert_true( tmp2.ndim == 3 )
+    assert_true( tmp2.shape[2] == 4 )
+    
+    print type((a*tintColor[0]).astype(numpy.ndarray))
+    
+    assert_true( (tmp2[:,:,0] == 0).all() )
+    assert_true( (tmp2[:,:,2] == 0).all() )
+    assert_true( (tmp2[:,:,3] == tmp1).all() )
+    assert_true( (tmp2[:,:,1] == tmp1).all() )
 
 if __name__ == '__main__':
     import nose
