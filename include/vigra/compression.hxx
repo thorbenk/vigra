@@ -50,7 +50,9 @@ enum CompressionMethod {  DEFAULT_COMPRESSION=-2,  // use default method (depend
                           ZLIB_FAST=1, // fastest compression using zlib
                           ZLIB=6,      // zlib default compression level
                           ZLIB_BEST=9, // highest compression using zlib
-                          LZ4          // very fast LZ4 algorithm
+                          LZ4,         // very fast LZ4 algorithm
+                          BLOSC_FAST,
+                          BLOSC_BEST
                        };
 
 /** Compress the source buffer.

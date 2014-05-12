@@ -41,6 +41,10 @@
 #include <zlib.h>
 #endif
 
+#ifdef HasBLOSC
+#include <blosc.h>
+#endif
+
 namespace vigra {
 
 std::size_t compressImpl(char const * source, std::size_t srcSize, 
@@ -67,6 +71,27 @@ std::size_t compressImpl(char const * source, std::size_t srcSize,
         return destSize;
     #else
         vigra_precondition(false, "compress(): VIGRA was compiled without ZLIB compression.");
+        return 0;
+    #endif
+      }
+      case BLOSC_FAST:
+      case BLOSC_BEST:
+      {
+    #ifdef HasBLOSC
+        blosc_init();
+        buffer.resize(srcSize+BLOSC_MAX_OVERHEAD);
+        int compressedSize =
+        blosc_compress(method == BLOSC_FAST ? 1 : 9, /*compression level*/
+                       1, /*apply shuffle preconditioner*/
+                       4, /*typesize*/
+                       srcSize,
+                       source,
+                       buffer.data(),
+                       buffer.size());
+        blosc_destroy();
+        return compressedSize; 
+    #else
+        vigra_precondition(false, "compress(): VIGRA was compiled without BLOSC compression.");
         return 0;
     #endif
       }
@@ -154,6 +179,19 @@ void uncompress(char const * source, std::size_t srcSize,
         vigra_postcondition(res == Z_OK, "uncompress(): zlib decompression failed.");
     #else
         vigra_precondition(false, "uncompress(): VIGRA was compiled without ZLIB compression.");
+    #endif
+        break;
+      }
+      case BLOSC_FAST:
+      case BLOSC_BEST:
+      {
+    #ifdef HasBLOSC
+        blosc_init();
+        int res = blosc_decompress(source, dest, destSize);
+        blosc_destroy();
+        vigra_postcondition(res > 0, "uncompress(): blosc decompression failed.");
+    #else
+        vigra_precondition(false, "uncompress(): VIGRA was compiled without BLOSC compression.");
     #endif
         break;
       }

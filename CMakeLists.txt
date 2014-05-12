@@ -8,6 +8,8 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(vigra)
 
+OPTION(WITH_BLOSC "enable blosc compression" ON)
+
 # read the current version from config_version.hxx
 file(READ ${vigra_SOURCE_DIR}/include/vigra/config_version.hxx VIGRA_VERSION_FILE)
 string(REGEX MATCH "VIGRA_VERSION_MAJOR[ \t\n]+[^ \t\n]+" VIGRA_VERSION_MAJOR ${VIGRA_VERSION_FILE})
@@ -143,6 +145,14 @@ IF(WITH_LEMON)
     VIGRA_FIND_PACKAGE(LEMON)
 ENDIF()
 
+IF(WITH_BLOSC)
+    VIGRA_FIND_PACKAGE(Blosc)
+    IF(BLOSC_FOUND)
+        INCLUDE_DIRECTORIES(${BLOSC_INCLUDE_DIR})
+        ADD_DEFINITIONS(-DHasBLOSC)
+    ENDIF()
+ENDIF()
+
 SET(DOXYGEN_SKIP_DOT TRUE)
 FIND_PACKAGE(Doxygen)
 FIND_PACKAGE(PythonInterp 2)
@@ -166,7 +176,6 @@ ADD_CUSTOM_TARGET(ctest COMMAND ${CMAKE_CTEST_COMMAND})
 
 ADD_CUSTOM_TARGET(check_cpp)
 ADD_DEPENDENCIES(check check_cpp)
-
 
 OPTION(CREATE_CTEST_TARGETS "Create special targets for CTest" OFF)
 IF(CREATE_CTEST_TARGETS)
@@ -395,6 +404,14 @@ ELSEIF(NOT WITH_LEMON)
     MESSAGE( STATUS "  LEMON graph library disabled by user (WITH_LEMON=0)" )
 ELSE()
     MESSAGE( STATUS "  LEMON graph library not found (support disabled)" )
+ENDIF()
+
+IF(BLOSC_FOUND)
+    MESSAGE( STATUS "  Using BLOSC graph library: ${BLOSC_LIBRARY}" )
+ELSEIF(NOT WITH_BLOSC)
+    MESSAGE( STATUS "  BLOSC graph library disabled by user (WITH_BLOSC=0)" )
+ELSE()
+    MESSAGE( STATUS "  BLOSC graph library not found (support disabled)" )
 ENDIF()
 
 IF(WITH_VIGRANUMPY)
