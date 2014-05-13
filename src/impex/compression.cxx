@@ -50,7 +50,8 @@ namespace vigra {
 std::size_t compressImpl(char const * source, std::size_t srcSize, 
                          ArrayVector<char> & buffer,
                          CompressionMethod method,
-                         size_t typesize = 1
+                         size_t typesize = 1,
+                         int nthreads = 1
                         )
 {
     switch(method)
@@ -81,6 +82,7 @@ std::size_t compressImpl(char const * source, std::size_t srcSize,
       {
     #ifdef HasBLOSC
         blosc_init();
+        blosc_set_nthreads(nthreads);
         buffer.resize(srcSize+BLOSC_MAX_OVERHEAD);
         int compressedSize =
         blosc_compress(method == BLOSC_FAST ? 1 : 9, /*compression level*/
@@ -145,7 +147,7 @@ std::size_t compressImpl(char const * source, std::size_t srcSize,
     return 0;
 }
 
-void compress(char const * source, std::size_t size, ArrayVector<char> & dest, CompressionMethod method, size_t typesize)
+void compress(char const * source, std::size_t size, ArrayVector<char> & dest, CompressionMethod method, size_t typesize, int nthreads)
 {
     ArrayVector<char> buffer;
     std::size_t destSize = compressImpl(source, size, buffer, method, typesize);
@@ -153,7 +155,7 @@ void compress(char const * source, std::size_t size, ArrayVector<char> & dest, C
     std::copy(buffer.data(), buffer.data() + destSize, dest.begin());
 }
 
-void compress(char const * source, std::size_t size, std::vector<char> & dest, CompressionMethod method, size_t typesize)
+void compress(char const * source, std::size_t size, std::vector<char> & dest, CompressionMethod method, size_t typesize, int nthreads)
 {
     ArrayVector<char> buffer;
     std::size_t destSize = compressImpl(source, size, buffer, method, typesize);
@@ -161,7 +163,7 @@ void compress(char const * source, std::size_t size, std::vector<char> & dest, C
 }
 
 void uncompress(char const * source, std::size_t srcSize, 
-                char * dest, std::size_t destSize, CompressionMethod method)
+                char * dest, std::size_t destSize, CompressionMethod method, int nthreads)
 {
     switch(method)
     {
@@ -189,6 +191,7 @@ void uncompress(char const * source, std::size_t srcSize,
       {
     #ifdef HasBLOSC
         blosc_init();
+        blosc_set_nthreads(nthreads);
         int res = blosc_decompress(source, dest, destSize);
         blosc_destroy();
         vigra_postcondition(res > 0, "uncompress(): blosc decompression failed.");
