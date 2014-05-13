@@ -58,9 +58,12 @@ enum CompressionMethod {  DEFAULT_COMPRESSION=-2,  // use default method (depend
 /** Compress the source buffer.
 
     The destination array will be resized as required.
+    
+    \param typsize number of bytes of the original type to be compressed
+                   This can be exploited by BLOSC.
 */
-VIGRA_EXPORT void compress(char const * source, std::size_t size, ArrayVector<char> & dest, CompressionMethod method);
-VIGRA_EXPORT void compress(char const * source, std::size_t size, std::vector<char> & dest, CompressionMethod method);
+VIGRA_EXPORT void compress(char const * source, std::size_t size, ArrayVector<char> & dest, CompressionMethod method, size_t typesize = 1);
+VIGRA_EXPORT void compress(char const * source, std::size_t size, std::vector<char> & dest, CompressionMethod method, size_t typesize = 1);
 
 /** Uncompress the source buffer when the uncompressed size is known.
 

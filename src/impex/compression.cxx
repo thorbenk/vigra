@@ -49,7 +49,9 @@ namespace vigra {
 
 std::size_t compressImpl(char const * source, std::size_t srcSize, 
                          ArrayVector<char> & buffer,
-                         CompressionMethod method)
+                         CompressionMethod method,
+                         size_t typesize = 1
+                        )
 {
     switch(method)
     {
@@ -83,7 +85,7 @@ std::size_t compressImpl(char const * source, std::size_t srcSize,
         int compressedSize =
         blosc_compress(method == BLOSC_FAST ? 1 : 9, /*compression level*/
                        1, /*apply shuffle preconditioner*/
-                       4, /*typesize*/
+                       typesize, /*typesize*/
                        srcSize,
                        source,
                        buffer.data(),
@@ -143,18 +145,18 @@ std::size_t compressImpl(char const * source, std::size_t srcSize,
     return 0;
 }
 
-void compress(char const * source, std::size_t size, ArrayVector<char> & dest, CompressionMethod method)
+void compress(char const * source, std::size_t size, ArrayVector<char> & dest, CompressionMethod method, size_t typesize)
 {
     ArrayVector<char> buffer;
-    std::size_t destSize = compressImpl(source, size, buffer, method);
+    std::size_t destSize = compressImpl(source, size, buffer, method, typesize);
     dest.resize(destSize);
     std::copy(buffer.data(), buffer.data() + destSize, dest.begin());
 }
 
-void compress(char const * source, std::size_t size, std::vector<char> & dest, CompressionMethod method)
+void compress(char const * source, std::size_t size, std::vector<char> & dest, CompressionMethod method, size_t typesize)
 {
     ArrayVector<char> buffer;
-    std::size_t destSize = compressImpl(source, size, buffer, method);
+    std::size_t destSize = compressImpl(source, size, buffer, method, typesize);
     dest.insert(dest.begin(), buffer.data(), buffer.data() + destSize);
 }
 
