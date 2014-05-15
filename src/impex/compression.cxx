@@ -184,7 +184,7 @@ std::size_t compressImpl(char const * source, std::size_t srcSize,
 void compress(char const * source, std::size_t size, ArrayVector<char> & dest, CompressionMethod method, size_t typesize, int nthreads)
 {
     ArrayVector<char> buffer;
-    std::size_t destSize = compressImpl(source, size, buffer, method, typesize);
+    std::size_t destSize = compressImpl(source, size, buffer, method, typesize, nthreads);
     dest.resize(destSize);
     std::copy(buffer.data(), buffer.data() + destSize, dest.begin());
 }
@@ -192,7 +192,7 @@ void compress(char const * source, std::size_t size, ArrayVector<char> & dest, C
 void compress(char const * source, std::size_t size, std::vector<char> & dest, CompressionMethod method, size_t typesize, int nthreads)
 {
     ArrayVector<char> buffer;
-    std::size_t destSize = compressImpl(source, size, buffer, method, typesize);
+    std::size_t destSize = compressImpl(source, size, buffer, method, typesize, nthreads);
     dest.insert(dest.begin(), buffer.data(), buffer.data() + destSize);
 }
 
