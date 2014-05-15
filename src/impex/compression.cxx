@@ -77,15 +77,49 @@ std::size_t compressImpl(char const * source, std::size_t srcSize,
         return 0;
     #endif
       }
-      case BLOSC_FAST:
-      case BLOSC_BEST:
+      case BLOSC_BLOSCLZ_FAST:
+      case BLOSC_LZ4_FAST:
+      case BLOSC_LZ4HC_FAST:
+      case BLOSC_SNAPPY_FAST:
+      case BLOSC_ZLIB_FAST:
+      case BLOSC_BLOSCLZ_BEST:
+      case BLOSC_LZ4_BEST:
+      case BLOSC_LZ4HC_BEST:
+      case BLOSC_SNAPPY_BEST:
+      case BLOSC_ZLIB_BEST:
       {
     #ifdef HasBLOSC
+        int clevel;
         blosc_init();
         blosc_set_nthreads(nthreads);
+        if(method == BLOSC_BLOSCLZ_BEST || method == BLOSC_BLOSCLZ_FAST) {
+            blosc_set_compressor(BLOSC_BLOSCLZ_COMPNAME);
+        }
+        else if(method == BLOSC_LZ4_BEST || method == BLOSC_LZ4_FAST) {
+            blosc_set_compressor(BLOSC_LZ4_COMPNAME);
+        }
+        else if(method == BLOSC_LZ4HC_BEST || method == BLOSC_LZ4_FAST) {
+            blosc_set_compressor(BLOSC_LZ4HC_COMPNAME);
+        }
+        else if(method == BLOSC_SNAPPY_BEST || method == BLOSC_SNAPPY_FAST) {
+            blosc_set_compressor(BLOSC_SNAPPY_COMPNAME);
+        }
+        else if(method == BLOSC_ZLIB_BEST || method == BLOSC_ZLIB_FAST) {
+            blosc_set_compressor(BLOSC_ZLIB_COMPNAME);
+        }
+        if(method == BLOSC_BLOSCLZ_FAST || method == BLOSC_LZ4_FAST ||
+           method == BLOSC_LZ4HC_FAST || method == BLOSC_SNAPPY_FAST ||
+           method == BLOSC_ZLIB_FAST)
+        {
+            clevel = 1;
+        } 
+        else {
+            clevel = 9;
+        }
+        
         buffer.resize(srcSize+BLOSC_MAX_OVERHEAD);
         int compressedSize =
-        blosc_compress(method == BLOSC_FAST ? 1 : 9, /*compression level*/
+        blosc_compress(clevel, /*compression level*/
                        1, /*apply shuffle preconditioner*/
                        typesize, /*typesize*/
                        srcSize,
@@ -186,8 +220,16 @@ void uncompress(char const * source, std::size_t srcSize,
     #endif
         break;
       }
-      case BLOSC_FAST:
-      case BLOSC_BEST:
+      case BLOSC_BLOSCLZ_FAST:
+      case BLOSC_LZ4_FAST:
+      case BLOSC_LZ4HC_FAST:
+      case BLOSC_SNAPPY_FAST:
+      case BLOSC_ZLIB_FAST:
+      case BLOSC_BLOSCLZ_BEST:
+      case BLOSC_LZ4_BEST:
+      case BLOSC_LZ4HC_BEST:
+      case BLOSC_SNAPPY_BEST:
+      case BLOSC_ZLIB_BEST:
       {
     #ifdef HasBLOSC
         blosc_init();
