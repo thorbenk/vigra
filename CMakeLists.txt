@@ -26,6 +26,10 @@ SET(CMAKE_MODULE_PATH  ${CMAKE_MODULE_PATH}  ${vigra_SOURCE_DIR}/config)
 include(VigraSetDefaults)
 include(VigraCMakeUtils)
 
+OPTION(WITH_COVERAGE "Enable GCOV coverage" OFF)
+SET(BUILD_WITH_COVERAGE OFF) #whether we really build with coverage
+                             #(depends on compiler)
+
 INCLUDE_DIRECTORIES(${vigra_SOURCE_DIR}/include)
 
 IF(VIGRA_STATIC_LIB)
@@ -70,6 +74,13 @@ IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "(GNU|Clang)")
     ELSE()
         SET(CMAKE_CXX_FLAGS "-ftemplate-depth=900 ${CMAKE_CXX_FLAGS}" CACHE STRING  "Flags used by the compiler during all build types" FORCE)
         MESSAGE(STATUS "Checking template recursion depth: using -ftemplate-depth=900")
+    ENDIF()
+
+    IF(WITH_COVERAGE)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
+        set(BUILD_WITH_COVERAGE ON)
     ENDIF()
 ENDIF()
 
@@ -334,6 +345,12 @@ EXPORT(TARGETS vigraimpex FILE vigra-targets.cmake)
 MESSAGE( STATUS "---------------------------------------------------------" )
 MESSAGE( STATUS "VIGRA configuration information:" )
 MESSAGE( STATUS "---------------------------------------------------------" )
+
+IF(BUILD_WITH_COVERAGE)
+    MESSAGE( STATUS "  build with GCOV coverage" )
+ELSE()
+    MESSAGE( STATUS "  build without coverage" )
+ENDIF()
 
 IF(ZLIB_FOUND)
     MESSAGE( STATUS "  Using ZLIB  libraries: ${ZLIB_LIBRARIES}" )
