@@ -4,8 +4,15 @@ compiler:
   - clang
   - gcc
 
-python:
-  - "2.7"
+matrix:
+  include:
+    - compiler: gcc
+    - language: python
+    - python: "2.7"
+  include:
+    - compiler: clang
+    - language: python
+    - python: "2.7"
 
 before_script:
   - sudo apt-get install --assume-yes libhdf5-serial-dev libboost-python-dev libjpeg-dev libtiff4-dev libpng12-dev libfftw3-dev cmake
