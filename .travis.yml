@@ -17,4 +17,4 @@ script:
   - make test
 
 after_success:
-  - coveralls -b build
+  - coveralls -b $PWD 
