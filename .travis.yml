@@ -27,4 +27,4 @@ script:
   - make test
 
 after_success:
-  - coveralls
+  - coveralls -b build
