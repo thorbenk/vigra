@@ -17,4 +17,4 @@ script:
   - make test
 
 after_success:
-  - coveralls -b $PWD 
+  - coveralls -b /home/travis/build/thorbenk/vigra/include/vigra
